@@ -81,18 +81,12 @@ if st.session_state["comparisons"]:
     
     # Exibir legenda separadamente
     st.write("### 🔹 Legenda - Comparações")
-    legend_html = """
-    <div style='display: flex; flex-wrap: wrap;'>
-    """
+    legend_items = []
     for comp, color in color_map.items():
-        color_hex = f'rgba({color[0]*255},{color[1]*255},{color[2]*255},1)'
-        legend_html += f"""
-        <div style='margin-right: 15px; display: flex; align-items: center;'>
-            <div style='width: 20px; height: 20px; background: {color_hex}; margin-right: 5px;'></div>
-            <span>{comp}</span>
-        </div>
-        """
-    legend_html += "</div>"
+        color_hex = f'rgb({int(color[0]*255)},{int(color[1]*255)},{int(color[2]*255)})'
+        legend_items.append(f"<span style='display: inline-block; width: 20px; height: 20px; background: {color_hex}; margin-right: 10px;'></span>{comp}")
+    
+    legend_html = "<div style='display: flex; flex-wrap: wrap; gap: 15px;'>" + "".join(legend_items) + "</div>"
     st.markdown(legend_html, unsafe_allow_html=True)
     
     # Estatísticas gerais
