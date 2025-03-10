@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 
 # Configuração inicial do Streamlit
 st.title("🔬 Visualizador de Mapa Cromossômico - Estilo Avançado")
