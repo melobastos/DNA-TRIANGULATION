@@ -53,22 +53,22 @@ if st.session_state["comparisons"]:
     unique_comparisons = df["Comparison"].unique()
     color_map = {comp: np.random.rand(3,) for comp in unique_comparisons}
     
-    y_offset = 0  # Posição inicial no eixo Y para organizar os cromossomos
+    y_offsets = {chrom: 0 for chrom in chromosome_sizes.keys()}  # Controlar a sobreposição
+    y_gap = 0.5  # Distância entre sobreposições
     
     for chrom, chrom_length in chromosome_sizes.items():
-        ax.add_patch(plt.Rectangle((0, y_offset), chrom_length, 0.4, color="lightgray", alpha=0.5))  # Linha base do cromossomo
         chrom_data = df[df["Chr"] == chrom]
         
         for _, row in chrom_data.iterrows():
             color = color_map[row["Comparison"]]
+            y_offset = y_offsets[chrom]
             ax.add_patch(plt.Rectangle((int(row["Start"].replace(".", "")), y_offset), 
                                        int(row["End"].replace(".", "")) - int(row["Start"].replace(".", "")), 0.4, color=color, alpha=0.8))
-        
-        y_offset += 1  # Move para o próximo cromossomo
+            y_offsets[chrom] += y_gap  # Move para a próxima linha na sobreposição
     
     ax.set_xlim(0, max(chromosome_sizes.values()))
-    ax.set_ylim(0, y_offset)
-    ax.set_yticks(range(y_offset))
+    ax.set_ylim(0, max(y_offsets.values()) + 1)
+    ax.set_yticks(range(len(chromosome_sizes)))
     ax.set_yticklabels([f"Chr {chrom}" for chrom in chromosome_sizes.keys()])
     ax.set_xlabel("Posição no Cromossomo")
     ax.set_title("Comparação de Múltiplos DNAs por Cromossomo")
