@@ -50,28 +50,27 @@ if st.session_state["comparisons"]:
     unique_chromosomes = sorted(df["Chr"].unique())
     
     # Criar o gráfico único mostrando apenas os cromossomos relevantes
-    fig, ax = plt.subplots(figsize=(12, len(unique_chromosomes) * 0.5))  # Ajuste do tamanho do gráfico
+    fig, ax = plt.subplots(figsize=(12, len(unique_chromosomes) * 0.7))  # Ajuste do tamanho do gráfico
     
     # Criar um dicionário de cores para cada comparação
     unique_comparisons = df["Comparison"].unique()
     color_map = {comp: np.random.rand(3,) for comp in unique_comparisons}
     
-    y_offsets = {chrom: 0 for chrom in unique_chromosomes}  # Controlar a sobreposição
-    y_gap = 0.5  # Distância entre sobreposições
+    y_positions = {chrom: idx for idx, chrom in enumerate(unique_chromosomes)}  # Correta ordenação vertical
+    y_gap = 0.5  # Espaço entre as faixas
     
     for chrom in unique_chromosomes:  # Apenas cromossomos com segmentos
         chrom_length = chromosome_sizes[chrom]
         chrom_data = df[df["Chr"] == chrom]
+        y_offset = y_positions[chrom]  # Ajustar corretamente a posição no eixo Y
         
         for _, row in chrom_data.iterrows():
             color = color_map[row["Comparison"]]
-            y_offset = y_offsets[chrom]
             ax.add_patch(plt.Rectangle((row["Start"], y_offset), 
                                        row["End"] - row["Start"], 0.4, color=color, alpha=0.8))
-            y_offsets[chrom] += y_gap  # Move para a próxima linha na sobreposição
-    
+        
     ax.set_xlim(0, max(chromosome_sizes.values()))
-    ax.set_ylim(0, max(y_offsets.values()) + 1)
+    ax.set_ylim(-1, len(unique_chromosomes))
     ax.set_yticks(range(len(unique_chromosomes)))
     ax.set_yticklabels([f"Chr {chrom}" for chrom in unique_chromosomes])
     ax.set_xlabel("Posição no Cromossomo")
