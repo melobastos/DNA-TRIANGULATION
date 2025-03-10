@@ -14,60 +14,61 @@ chromosome_sizes = {
 
 # Configuração inicial do Streamlit
 st.title("🔬 Visualizador de Mapa Cromossômico - Comparação de Múltiplos DNAs")
-st.write("Faça upload de um arquivo CSV contendo as comparações de múltiplos indivíduos para visualizar as coincidências de DNA.")
+st.write("Insira manualmente as comparações de DNA para visualizar as coincidências cromossômicas.")
 
-# Upload do arquivo CSV
-uploaded_file = st.file_uploader("Carregar arquivo CSV", type=["csv"])
+# Lista para armazenar os dados inseridos
+comparisons = []
 
-if uploaded_file:
-    # Ler o CSV com separador de ponto e vírgula
-    df = pd.read_csv(uploaded_file, sep=";")
+# Interface para entrada manual de dados
+with st.form("dna_input_form"):
+    person = st.text_input("Nome da Pessoa Comparada:")
+    chrom = st.number_input("Cromossomo:", min_value=1, max_value=22, step=1)
+    start = st.number_input("Start Position:", min_value=0, step=1)
+    end = st.number_input("End Position:", min_value=0, step=1)
+    submit_button = st.form_submit_button("Adicionar Segmento")
     
-    # Exibir os dados carregados
-    st.write("### Dados Carregados")
+    if submit_button:
+        if end > start and chrom in chromosome_sizes:
+            comparisons.append({"Chr": chrom, "Start": start, "End": end, "Comparison": person})
+        else:
+            st.error("Erro: O End Position deve ser maior que o Start Position e o cromossomo deve ser válido.")
+
+# Converter os dados para um DataFrame
+if comparisons:
+    df = pd.DataFrame(comparisons)
+    st.write("### Dados Inseridos")
     st.dataframe(df)
     
-    # Verificar se as colunas corretas existem
-    expected_columns = {"Chr", "Start", "End", "Comparison"}
-    if not expected_columns.issubset(df.columns):
-        st.error("Erro: O arquivo CSV deve conter as colunas 'Chr', 'Start', 'End' e 'Comparison'.")
-    else:
-        # Garantir que os valores numéricos sejam convertidos corretamente
-        df["Chr"] = df["Chr"].astype(float).astype(int)  # Remove .0 e converte para inteiro
-        df["Start"] = df["Start"].astype(float).astype(int)  # Converte para inteiro
-        df["End"] = df["End"].astype(float).astype(int)  # Converte para inteiro
-        df["Length"] = df["End"] - df["Start"]
+    # Criar o gráfico único mostrando todos os cromossomos
+    fig, ax = plt.subplots(figsize=(12, 8))  # Ajuste do tamanho geral
+    
+    # Criar um dicionário de cores para cada comparação
+    unique_comparisons = df["Comparison"].unique()
+    color_map = {comp: np.random.rand(3,) for comp in unique_comparisons}
+    
+    y_offset = 0  # Posição inicial no eixo Y para organizar os cromossomos
+    
+    for chrom, chrom_length in chromosome_sizes.items():
+        ax.add_patch(plt.Rectangle((0, y_offset), chrom_length, 0.4, color="lightgray", alpha=0.5))  # Linha base do cromossomo
+        chrom_data = df[df["Chr"] == chrom]
         
-        # Criar o gráfico único mostrando todos os cromossomos
-        fig, ax = plt.subplots(figsize=(12, 8))  # Ajuste do tamanho geral
+        for _, row in chrom_data.iterrows():
+            color = color_map[row["Comparison"]]
+            ax.add_patch(plt.Rectangle((row["Start"], y_offset), row["End"] - row["Start"], 0.4, color=color, alpha=0.8))
         
-        # Criar um dicionário de cores para cada comparação
-        comparisons = df["Comparison"].unique()
-        color_map = {comp: np.random.rand(3,) for comp in comparisons}
-        
-        y_offset = 0  # Posição inicial no eixo Y para organizar os cromossomos
-        
-        for chrom, chrom_length in chromosome_sizes.items():
-            ax.add_patch(plt.Rectangle((0, y_offset), chrom_length, 0.4, color="lightgray", alpha=0.5))  # Linha base do cromossomo
-            chrom_data = df[df["Chr"] == chrom]
-            
-            for _, row in chrom_data.iterrows():
-                color = color_map[row["Comparison"]]
-                ax.add_patch(plt.Rectangle((row["Start"], y_offset), row["End"] - row["Start"], 0.4, color=color, alpha=0.8))
-            
-            y_offset += 1  # Move para o próximo cromossomo
-        
-        ax.set_xlim(0, max(chromosome_sizes.values()))
-        ax.set_ylim(0, y_offset)
-        ax.set_yticks(range(y_offset))
-        ax.set_yticklabels([f"Chr {chrom}" for chrom in chromosome_sizes.keys()])
-        ax.set_xlabel("Posição no Cromossomo")
-        ax.set_title("Comparação de Múltiplos DNAs por Cromossomo")
-        
-        st.pyplot(fig)
-        
-        # Estatísticas gerais
-        st.write("### 📊 Estatísticas")
-        st.write(f"🔹 **Total de segmentos analisados:** {len(df)}")
-        st.write(f"🔹 **Número de cromossomos únicos:** {df['Chr'].nunique()}")
-        st.write(f"🔹 **Número de pessoas comparadas com Raymundo:** {df['Comparison'].nunique()}")
+        y_offset += 1  # Move para o próximo cromossomo
+    
+    ax.set_xlim(0, max(chromosome_sizes.values()))
+    ax.set_ylim(0, y_offset)
+    ax.set_yticks(range(y_offset))
+    ax.set_yticklabels([f"Chr {chrom}" for chrom in chromosome_sizes.keys()])
+    ax.set_xlabel("Posição no Cromossomo")
+    ax.set_title("Comparação de Múltiplos DNAs por Cromossomo")
+    
+    st.pyplot(fig)
+    
+    # Estatísticas gerais
+    st.write("### 📊 Estatísticas")
+    st.write(f"🔹 **Total de segmentos analisados:** {len(df)}")
+    st.write(f"🔹 **Número de cromossomos únicos:** {df['Chr'].nunique()}")
+    st.write(f"🔹 **Número de pessoas comparadas:** {df['Comparison'].nunique()}")
