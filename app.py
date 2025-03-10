@@ -17,7 +17,8 @@ st.title("🔬 Visualizador de Mapa Cromossômico - Comparação de Múltiplos D
 st.write("Insira manualmente as comparações de DNA para visualizar as coincidências cromossômicas.")
 
 # Lista para armazenar os dados inseridos
-comparisons = []
+if "comparisons" not in st.session_state:
+    st.session_state["comparisons"] = []
 
 # Interface para entrada manual de dados
 with st.form("dna_input_form"):
@@ -32,15 +33,15 @@ with st.form("dna_input_form"):
             start_int = int(start.replace(".", ""))
             end_int = int(end.replace(".", ""))
             if end_int > start_int and chrom in chromosome_sizes:
-                comparisons.append({"Chr": chrom, "Start": start, "End": end, "Comparison": person})
+                st.session_state["comparisons"].append({"Chr": chrom, "Start": start, "End": end, "Comparison": person})
             else:
                 st.error("Erro: O End Position deve ser maior que o Start Position e o cromossomo deve ser válido.")
         except ValueError:
             st.error("Erro: Certifique-se de que os valores de Start e End estão corretos e contêm apenas números e pontos.")
 
 # Converter os dados para um DataFrame
-if comparisons:
-    df = pd.DataFrame(comparisons)
+if st.session_state["comparisons"]:
+    df = pd.DataFrame(st.session_state["comparisons"])
     
     st.write("### Dados Inseridos")
     st.dataframe(df)
