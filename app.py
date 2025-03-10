@@ -77,11 +77,23 @@ if st.session_state["comparisons"]:
     ax.set_xlabel("Posição no Cromossomo")
     ax.set_title("Comparação de Múltiplos DNAs por Cromossomo")
     
-    # Criar legenda
-    legend_patches = [plt.Rectangle((0, 0), 1, 1, color=color_map[comp]) for comp in unique_comparisons]
-    ax.legend(legend_patches, unique_comparisons, title="Legenda - Comparações", loc="upper right", fontsize="small")
-    
     st.pyplot(fig)
+    
+    # Exibir legenda separadamente
+    st.write("### 🔹 Legenda - Comparações")
+    legend_html = """
+    <div style='display: flex; flex-wrap: wrap;'>
+    """
+    for comp, color in color_map.items():
+        color_hex = f'rgba({color[0]*255},{color[1]*255},{color[2]*255},1)'
+        legend_html += f"""
+        <div style='margin-right: 15px; display: flex; align-items: center;'>
+            <div style='width: 20px; height: 20px; background: {color_hex}; margin-right: 5px;'></div>
+            <span>{comp}</span>
+        </div>
+        """
+    legend_html += "</div>"
+    st.markdown(legend_html, unsafe_allow_html=True)
     
     # Estatísticas gerais
     st.write("### 📊 Estatísticas")
