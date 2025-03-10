@@ -23,7 +23,7 @@ if "comparisons" not in st.session_state:
 # Interface para entrada manual de dados
 with st.form("dna_input_form"):
     person = st.text_input("Nome da Pessoa Comparada:")
-    chrom = st.number_input("Cromossomo:", min_value=1, max_value=22, step=1)
+    chrom = st.number_input("Cromossomo:", min_value=1, max_value=22, step=1, format="%d")
     start = st.text_input("Start Position (com pontuação):")
     end = st.text_input("End Position (com pontuação):")
     submit_button = st.form_submit_button("Adicionar Segmento")
@@ -33,7 +33,7 @@ with st.form("dna_input_form"):
             start_int = int(start.replace(".", ""))
             end_int = int(end.replace(".", ""))
             if end_int > start_int and chrom in chromosome_sizes:
-                st.session_state["comparisons"].append({"Chr": chrom, "Start": start, "End": end, "Comparison": person})
+                st.session_state["comparisons"].append({"Chr": int(chrom), "Start": start, "End": end, "Comparison": person})
             else:
                 st.error("Erro: O End Position deve ser maior que o Start Position e o cromossomo deve ser válido.")
         except ValueError:
