@@ -23,23 +23,24 @@ comparisons = []
 with st.form("dna_input_form"):
     person = st.text_input("Nome da Pessoa Comparada:")
     chrom = st.number_input("Cromossomo:", min_value=1, max_value=22, step=1)
-    start = st.number_input("Start Position:", min_value=0, step=1, format="%d")
-    end = st.number_input("End Position:", min_value=0, step=1, format="%d")
+    start = st.text_input("Start Position (com pontuação):")
+    end = st.text_input("End Position (com pontuação):")
     submit_button = st.form_submit_button("Adicionar Segmento")
     
     if submit_button:
-        if end > start and chrom in chromosome_sizes:
-            comparisons.append({"Chr": chrom, "Start": start, "End": end, "Comparison": person})
-        else:
-            st.error("Erro: O End Position deve ser maior que o Start Position e o cromossomo deve ser válido.")
+        try:
+            start_int = int(start.replace(".", ""))
+            end_int = int(end.replace(".", ""))
+            if end_int > start_int and chrom in chromosome_sizes:
+                comparisons.append({"Chr": chrom, "Start": start, "End": end, "Comparison": person})
+            else:
+                st.error("Erro: O End Position deve ser maior que o Start Position e o cromossomo deve ser válido.")
+        except ValueError:
+            st.error("Erro: Certifique-se de que os valores de Start e End estão corretos e contêm apenas números e pontos.")
 
 # Converter os dados para um DataFrame
 if comparisons:
     df = pd.DataFrame(comparisons)
-    
-    # Formatar os números para exibição com pontuação
-    df["Start"] = df["Start"].apply(lambda x: f"{x:,}".replace(",", "."))
-    df["End"] = df["End"].apply(lambda x: f"{x:,}".replace(",", "."))
     
     st.write("### Dados Inseridos")
     st.dataframe(df)
