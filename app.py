@@ -33,7 +33,7 @@ with st.form("dna_input_form"):
             start_int = int(start.replace(".", ""))
             end_int = int(end.replace(".", ""))
             if end_int > start_int and chrom in chromosome_sizes:
-                st.session_state["comparisons"].append({"Chr": int(chrom), "Start": start, "End": end, "Comparison": person})
+                st.session_state["comparisons"].append({"Chr": chrom, "Start": start_int, "End": end_int, "Comparison": person})
             else:
                 st.error("Erro: O End Position deve ser maior que o Start Position e o cromossomo deve ser válido.")
         except ValueError:
@@ -62,8 +62,8 @@ if st.session_state["comparisons"]:
         for _, row in chrom_data.iterrows():
             color = color_map[row["Comparison"]]
             y_offset = y_offsets[chrom]
-            ax.add_patch(plt.Rectangle((int(row["Start"].replace(".", "")), y_offset), 
-                                       int(row["End"].replace(".", "")) - int(row["Start"].replace(".", "")), 0.4, color=color, alpha=0.8))
+            ax.add_patch(plt.Rectangle((row["Start"], y_offset), 
+                                       row["End"] - row["Start"], 0.4, color=color, alpha=0.8))
             y_offsets[chrom] += y_gap  # Move para a próxima linha na sobreposição
     
     ax.set_xlim(0, max(chromosome_sizes.values()))
