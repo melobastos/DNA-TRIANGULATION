@@ -13,8 +13,8 @@ st.write("Insira uma tabela com as informações de segmentos de DNA para visual
 uploaded_file = st.file_uploader("Carregue um arquivo CSV", type=["csv"])
 
 if uploaded_file:
-    df = pd.read_csv(uploaded_file)
-
+   df = pd.read_csv(uploaded_file, sep=";")
+    
     # Exibir os dados carregados
     st.write("### Dados Carregados")
     st.dataframe(df)
