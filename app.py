@@ -13,8 +13,8 @@ chromosome_sizes = {
 }
 
 # Configuração inicial do Streamlit
-st.title("🔬 Visualizador de Mapa Cromossômico - Escala Real")
-st.write("Faça upload de um arquivo CSV contendo os segmentos de DNA para visualizar cada cromossomo na escala correta.")
+st.title("🔬 Visualizador de Mapa Cromossômico - Comparação de Múltiplos DNAs")
+st.write("Faça upload de um arquivo CSV contendo as comparações de múltiplos indivíduos para visualizar as coincidências de DNA.")
 
 # Upload do arquivo CSV
 uploaded_file = st.file_uploader("Carregar arquivo CSV", type=["csv"])
@@ -28,9 +28,9 @@ if uploaded_file:
     st.dataframe(df)
     
     # Verificar se as colunas corretas existem
-    expected_columns = {"Chr", "Start", "End"}
+    expected_columns = {"Chr", "Start", "End", "Comparison"}
     if not expected_columns.issubset(df.columns):
-        st.error("Erro: O arquivo CSV deve conter as colunas 'Chr', 'Start' e 'End'.")
+        st.error("Erro: O arquivo CSV deve conter as colunas 'Chr', 'Start', 'End' e 'Comparison'.")
     else:
         # Normalizando os valores para visualização
         df["Start"] = df["Start"].str.replace(".", "", regex=False).astype(int)
@@ -51,10 +51,12 @@ if uploaded_file:
                 # Criando uma linha de referência preta (cromossomo base)
                 ax.add_patch(plt.Rectangle((0, 0.4), chrom_length, 0.2, color="black", alpha=0.8))
                 
-                # Adicionando segmentos coloridos
-                colors = ["blue", "red", "yellow", "green"]  # Paleta personalizada
+                # Adicionando segmentos coloridos por comparação
+                comparisons = df["Comparison"].unique()
+                color_map = {comp: np.random.rand(3,) for comp in comparisons}  # Gera cores únicas para cada pessoa comparada
+                
                 for i, row in chrom_data.iterrows():
-                    color = np.random.choice(colors)
+                    color = color_map[row["Comparison"]]
                     ax.add_patch(plt.Rectangle((row["Start"], 0.4), row["End"] - row["Start"], 0.2, color=color, alpha=0.8))
                 
                 ax.set_xlim(0, chrom_length)
@@ -62,7 +64,7 @@ if uploaded_file:
                 ax.set_xticks([])
                 ax.set_yticks([])
                 ax.set_xlabel("Posição no Cromossomo")
-                ax.set_title(f"Visualização do Cromossomo {chrom} (Escala Real)")
+                ax.set_title(f"Visualização do Cromossomo {chrom} - Comparação com Raymundo")
                 
                 st.pyplot(fig)
         
@@ -70,3 +72,4 @@ if uploaded_file:
         st.write("### 📊 Estatísticas")
         st.write(f"🔹 **Total de segmentos analisados:** {len(df)}")
         st.write(f"🔹 **Número de cromossomos únicos:** {df['Chr'].nunique()}")
+        st.write(f"🔹 **Número de pessoas comparadas com Raymundo:** {df['Comparison'].nunique()}")
