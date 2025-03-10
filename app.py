@@ -32,9 +32,10 @@ if uploaded_file:
     if not expected_columns.issubset(df.columns):
         st.error("Erro: O arquivo CSV deve conter as colunas 'Chr', 'Start', 'End' e 'Comparison'.")
     else:
-        # Normalizando os valores para visualização
-        df["Start"] = df["Start"].str.replace(".", "", regex=False).astype(int)
-        df["End"] = df["End"].str.replace(".", "", regex=False).astype(int)
+        # Garantir que os valores numéricos sejam tratados corretamente
+        df["Chr"] = df["Chr"].astype(str).str.replace(".0", "", regex=False).astype(int)
+        df["Start"] = df["Start"].astype(str).str.replace(".", "", regex=False).astype(int)
+        df["End"] = df["End"].astype(str).str.replace(".", "", regex=False).astype(int)
         df["Length"] = df["End"] - df["Start"]
         
         # Criar um gráfico para cada cromossomo individualmente, ajustado à escala real
