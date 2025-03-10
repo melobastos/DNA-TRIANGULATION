@@ -77,6 +77,10 @@ if st.session_state["comparisons"]:
     ax.set_xlabel("Posição no Cromossomo")
     ax.set_title("Comparação de Múltiplos DNAs por Cromossomo")
     
+    # Criar legenda
+    legend_patches = [plt.Rectangle((0, 0), 1, 1, color=color_map[comp]) for comp in unique_comparisons]
+    ax.legend(legend_patches, unique_comparisons, title="Legenda - Comparações", loc="upper right", fontsize="small")
+    
     st.pyplot(fig)
     
     # Estatísticas gerais
