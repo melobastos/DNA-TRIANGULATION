@@ -33,7 +33,7 @@ with st.form("dna_input_form"):
             start_int = int(start.replace(".", ""))
             end_int = int(end.replace(".", ""))
             if end_int > start_int and chrom in chromosome_sizes:
-                st.session_state["comparisons"].append({"Chr": chrom, "Start": start_int, "End": end_int, "Comparison": person})
+                st.session_state["comparisons"].append({"Chr": int(chrom), "Start": start_int, "End": end_int, "Comparison": person})
             else:
                 st.error("Erro: O End Position deve ser maior que o Start Position e o cromossomo deve ser válido.")
         except ValueError:
@@ -46,17 +46,21 @@ if st.session_state["comparisons"]:
     st.write("### Dados Inseridos")
     st.dataframe(df)
     
-    # Criar o gráfico único mostrando todos os cromossomos
-    fig, ax = plt.subplots(figsize=(12, 8))  # Ajuste do tamanho geral
+    # Filtrar apenas os cromossomos que possuem segmentos
+    unique_chromosomes = sorted(df["Chr"].unique())
+    
+    # Criar o gráfico único mostrando apenas os cromossomos relevantes
+    fig, ax = plt.subplots(figsize=(12, len(unique_chromosomes) * 0.5))  # Ajuste do tamanho do gráfico
     
     # Criar um dicionário de cores para cada comparação
     unique_comparisons = df["Comparison"].unique()
     color_map = {comp: np.random.rand(3,) for comp in unique_comparisons}
     
-    y_offsets = {chrom: 0 for chrom in chromosome_sizes.keys()}  # Controlar a sobreposição
+    y_offsets = {chrom: 0 for chrom in unique_chromosomes}  # Controlar a sobreposição
     y_gap = 0.5  # Distância entre sobreposições
     
-    for chrom, chrom_length in chromosome_sizes.items():
+    for chrom in unique_chromosomes:  # Apenas cromossomos com segmentos
+        chrom_length = chromosome_sizes[chrom]
         chrom_data = df[df["Chr"] == chrom]
         
         for _, row in chrom_data.iterrows():
@@ -68,8 +72,8 @@ if st.session_state["comparisons"]:
     
     ax.set_xlim(0, max(chromosome_sizes.values()))
     ax.set_ylim(0, max(y_offsets.values()) + 1)
-    ax.set_yticks(range(len(chromosome_sizes)))
-    ax.set_yticklabels([f"Chr {chrom}" for chrom in chromosome_sizes.keys()])
+    ax.set_yticks(range(len(unique_chromosomes)))
+    ax.set_yticklabels([f"Chr {chrom}" for chrom in unique_chromosomes])
     ax.set_xlabel("Posição no Cromossomo")
     ax.set_title("Comparação de Múltiplos DNAs por Cromossomo")
     
@@ -78,5 +82,5 @@ if st.session_state["comparisons"]:
     # Estatísticas gerais
     st.write("### 📊 Estatísticas")
     st.write(f"🔹 **Total de segmentos analisados:** {len(df)}")
-    st.write(f"🔹 **Número de cromossomos únicos:** {df['Chr'].nunique()}")
+    st.write(f"🔹 **Número de cromossomos exibidos:** {len(unique_chromosomes)}")
     st.write(f"🔹 **Número de pessoas comparadas:** {df['Comparison'].nunique()}")
