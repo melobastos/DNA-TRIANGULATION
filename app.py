@@ -32,42 +32,39 @@ if uploaded_file:
     if not expected_columns.issubset(df.columns):
         st.error("Erro: O arquivo CSV deve conter as colunas 'Chr', 'Start', 'End' e 'Comparison'.")
     else:
-        # Garantir que os valores numéricos sejam tratados corretamente
-        df["Chr"] = df["Chr"].astype(str).str.replace(".0", "", regex=False).astype(int)
-        df["Start"] = df["Start"].astype(str).str.replace(".", "", regex=False).astype(int)
-        df["End"] = df["End"].astype(str).str.replace(".", "", regex=False).astype(int)
+        # Garantir que os valores numéricos sejam convertidos corretamente
+        df["Chr"] = df["Chr"].astype(float).astype(int)  # Remove .0 e converte para inteiro
+        df["Start"] = df["Start"].astype(float).astype(int)  # Converte para inteiro
+        df["End"] = df["End"].astype(float).astype(int)  # Converte para inteiro
         df["Length"] = df["End"] - df["Start"]
         
-        # Criar um gráfico para cada cromossomo individualmente, ajustado à escala real
-        chroms = df["Chr"].unique()
+        # Criar o gráfico único mostrando todos os cromossomos
+        fig, ax = plt.subplots(figsize=(12, 8))  # Ajuste do tamanho geral
         
-        for chrom in chroms:
-            if chrom in chromosome_sizes:
-                st.write(f"## Cromossomo {chrom}")
-                chrom_data = df[df["Chr"] == chrom]
-                chrom_length = chromosome_sizes[chrom]
-                
-                fig, ax = plt.subplots(figsize=(12, 2))  # Ajuste do tamanho
-                
-                # Criando uma linha de referência preta (cromossomo base)
-                ax.add_patch(plt.Rectangle((0, 0.4), chrom_length, 0.2, color="black", alpha=0.8))
-                
-                # Adicionando segmentos coloridos por comparação
-                comparisons = df["Comparison"].unique()
-                color_map = {comp: np.random.rand(3,) for comp in comparisons}  # Gera cores únicas para cada pessoa comparada
-                
-                for i, row in chrom_data.iterrows():
-                    color = color_map[row["Comparison"]]
-                    ax.add_patch(plt.Rectangle((row["Start"], 0.4), row["End"] - row["Start"], 0.2, color=color, alpha=0.8))
-                
-                ax.set_xlim(0, chrom_length)
-                ax.set_ylim(0, 1)
-                ax.set_xticks([])
-                ax.set_yticks([])
-                ax.set_xlabel("Posição no Cromossomo")
-                ax.set_title(f"Visualização do Cromossomo {chrom} - Comparação com Raymundo")
-                
-                st.pyplot(fig)
+        # Criar um dicionário de cores para cada comparação
+        comparisons = df["Comparison"].unique()
+        color_map = {comp: np.random.rand(3,) for comp in comparisons}
+        
+        y_offset = 0  # Posição inicial no eixo Y para organizar os cromossomos
+        
+        for chrom, chrom_length in chromosome_sizes.items():
+            ax.add_patch(plt.Rectangle((0, y_offset), chrom_length, 0.4, color="lightgray", alpha=0.5))  # Linha base do cromossomo
+            chrom_data = df[df["Chr"] == chrom]
+            
+            for _, row in chrom_data.iterrows():
+                color = color_map[row["Comparison"]]
+                ax.add_patch(plt.Rectangle((row["Start"], y_offset), row["End"] - row["Start"], 0.4, color=color, alpha=0.8))
+            
+            y_offset += 1  # Move para o próximo cromossomo
+        
+        ax.set_xlim(0, max(chromosome_sizes.values()))
+        ax.set_ylim(0, y_offset)
+        ax.set_yticks(range(y_offset))
+        ax.set_yticklabels([f"Chr {chrom}" for chrom in chromosome_sizes.keys()])
+        ax.set_xlabel("Posição no Cromossomo")
+        ax.set_title("Comparação de Múltiplos DNAs por Cromossomo")
+        
+        st.pyplot(fig)
         
         # Estatísticas gerais
         st.write("### 📊 Estatísticas")
