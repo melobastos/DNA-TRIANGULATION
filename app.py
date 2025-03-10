@@ -23,8 +23,8 @@ comparisons = []
 with st.form("dna_input_form"):
     person = st.text_input("Nome da Pessoa Comparada:")
     chrom = st.number_input("Cromossomo:", min_value=1, max_value=22, step=1)
-    start = st.number_input("Start Position:", min_value=0, step=1)
-    end = st.number_input("End Position:", min_value=0, step=1)
+    start = st.number_input("Start Position:", min_value=0, step=1, format="%d")
+    end = st.number_input("End Position:", min_value=0, step=1, format="%d")
     submit_button = st.form_submit_button("Adicionar Segmento")
     
     if submit_button:
@@ -36,6 +36,11 @@ with st.form("dna_input_form"):
 # Converter os dados para um DataFrame
 if comparisons:
     df = pd.DataFrame(comparisons)
+    
+    # Formatar os números para exibição com pontuação
+    df["Start"] = df["Start"].apply(lambda x: f"{x:,}".replace(",", "."))
+    df["End"] = df["End"].apply(lambda x: f"{x:,}".replace(",", "."))
+    
     st.write("### Dados Inseridos")
     st.dataframe(df)
     
@@ -54,7 +59,8 @@ if comparisons:
         
         for _, row in chrom_data.iterrows():
             color = color_map[row["Comparison"]]
-            ax.add_patch(plt.Rectangle((row["Start"], y_offset), row["End"] - row["Start"], 0.4, color=color, alpha=0.8))
+            ax.add_patch(plt.Rectangle((int(row["Start"].replace(".", "")), y_offset), 
+                                       int(row["End"].replace(".", "")) - int(row["Start"].replace(".", "")), 0.4, color=color, alpha=0.8))
         
         y_offset += 1  # Move para o próximo cromossomo
     
