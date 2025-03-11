@@ -13,7 +13,7 @@ try:
 except ImportError:
     EXCEL_AVAILABLE = False
 
-# Configuração da página
+# Configuração da página (deve ser a primeira instrução Streamlit!)
 st.set_page_config(
     page_title="Visualizador de Mapa Cromossômico",
     page_icon="🔬",
@@ -47,40 +47,20 @@ def convert_df_to_csv(df):
     processed_data = output.getvalue()
     return processed_data
 
-# Função para converter DataFrame para Excel (se openpyxl disponível)
-def convert_df_to_excel(df):
-    if not EXCEL_AVAILABLE:
-        return None
-    output = BytesIO()
-    df.to_excel(output, index=False)
-    processed_data = output.getvalue()
-    return processed_data
-
 # Função para formatar ticks do eixo x
 def format_x_ticks(x, pos):
     return format_number(int(x))
 
-# Configuração inicial do Streamlit
-st.set_page_config(
-    page_title="Visualizador de Mapa Cromossômico",
-    page_icon="🔬",
-    layout="wide"
-)
-
 st.title("🔬 Visualizador de Mapa Cromossômico - Comparação de Múltiplos DNAs")
 
-# Usar tabs para organizar a interface
-tab1, tab2, tab3 = st.tabs(["📝 Entrada de Dados", "📊 Visualização", "⚙️ Configurações"])
+# Tabs
 
-with tab1:
-    # [Mantido exatamente igual ao original]
-    pass  # Mantenha aqui o código original sem alteração
+tab1, tab2, tab3 = st.tabs(["📝 Entrada de Dados", "📊 Visualização", "⚙️ Configurações"])
 
 with tab2:
     if "comparisons" in st.session_state and st.session_state.comparisons:
         df = pd.DataFrame(st.session_state.comparisons)
 
-        # Configurações de visualização
         all_chromosomes = sorted(df["Chr"].unique(), key=lambda x: (isinstance(x, str), x))
         selected_chromosomes = st.multiselect("Selecionar Cromossomos para Visualizar:", all_chromosomes, default=all_chromosomes)
 
@@ -95,17 +75,14 @@ with tab2:
             fig, ax = plt.subplots(figsize=(12, fig_height))
 
             for idx, chrom in enumerate(unique_chromosomes):
-                y_base = idx = idx = unique_chromosomes.index(chrom)
+                y_base = idx
                 ax.barh(y_base, chromosome_sizes[chrom], height=0.6, color="lightgray")
 
-                chrom_df = df[df["Chr"] == chrom]
+                chrom_df = filtered_df[filtered_df["Chr"] == chrom]
                 for _, row in chrom_df.iterrows():
                     segment_length = row["End"] - row["Start"]
-                    person_idx = list(df["Comparison"].unique()).index(row["Comparison"])
-                    y_offset = y_base - 0.3 + 0.15 * (person_height := 0.4)
                     ax.add_patch(plt.Rectangle((row["Start"], y_base - 0.3), segment_length, 0.6, color=color_map[row["Comparison"]]))
 
-                    # Adiciona nome da comparação ao lado do segmento
                     ax.text(
                         row["End"] + chromosome_sizes[chrom] * 0.005,
                         y_base,
@@ -122,34 +99,10 @@ with tab2:
             st.pyplot(fig)
 
             img = BytesIO()
-            plt.savefig(img_bytes, format='png', bbox_inches='tight')
-            st.download_button("Baixar Imagem do Gráfico", img_bytes, "chromosome_map.png", "image/png")
-
+            fig.savefig(img, format='png', bbox_inches='tight')
+            img.seek(0)
+            st.download_button("Baixar Imagem do Gráfico", img, "chromosome_map.png", "image/png")
         else:
             st.warning("Nenhum dado disponível para visualização.")
-
     else:
         st.info("Nenhum dado disponível para visualização. Insira dados primeiro.")
-
-with tab3:
-    st.write("Configurações da visualização.")
-    cols_per_row = 3
-    chrom_list = sorted(list(chromosome_sizes.keys()), key=lambda x: (isinstance(x, str), x))
-
-    if "custom_chrom_sizes" not in st.session_state:
-        st.session_state.custom_chrom_sizes = chromosome_sizes.copy()
-
-    cols = st.columns(cols_per_row)
-    for idx, chrom in enumerate(chrom_list):
-        with cols[idx % cols_per_row]:
-            new_size = st.number_input(
-                f"Chr {chrom}", min_value=1, value=st.session_state.custom_chrom_sizes[chrom], format="%d"
-            )
-            st.session_state.custom_chrom_sizes[chrom] = new_size
-
-    chromosome_sizes = st.session_state.custom_chrom_sizes
-
-    st.info("Versão do aplicativo: 1.0.0")
-
-    if not EXCEL_AVAILABLE:
-        st.warning("Biblioteca 'openpyxl' não instalada.")
