@@ -270,8 +270,21 @@ with tab2:
                 person_count = chrom_person_counts[chrom]
                 chrom_height = chrom_heights[chrom]
                 
-                # Desenhar barra de fundo do cromossomo com altura proporcional
-                ax.add_patch(plt.Rectangle((0, y_base - 0.3), chrom_length, 0.6, 
+                # Calcular a altura total necessária para este cromossomo
+                # baseado no número de pessoas e no espaçamento
+                total_person_height = person_count * (person_height + person_spacing)
+                
+                # Ajustar a altura do fundo do cromossomo para cobrir todos os segmentos
+                bg_height = max(0.6, total_person_height)  # Usar no mínimo a altura padrão de 0.6
+                
+                # Ajustar o Y inicial para centralizar os segmentos
+                bg_y_start = y_base - 0.3
+                if bg_height > 0.6:
+                    # Se a altura for maior que a padrão, ajustar o início para manter o alinhamento
+                    bg_y_start = y_base - (bg_height - 0.6) / 2
+                
+                # Desenhar barra de fundo do cromossomo com altura adaptada
+                ax.add_patch(plt.Rectangle((0, bg_y_start), chrom_length, bg_height, 
                                           color='lightgrey', alpha=0.3))
                 
                 # Agrupar segmentos por pessoa
