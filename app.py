@@ -268,20 +268,17 @@ with tab2:
                 
                 # Obter o número de pessoas para este cromossomo
                 person_count = chrom_person_counts[chrom]
-                chrom_height = chrom_heights[chrom]
                 
                 # Calcular a altura total necessária para este cromossomo
                 # baseado no número de pessoas e no espaçamento
                 total_person_height = person_count * (person_height + person_spacing)
                 
                 # Ajustar a altura do fundo do cromossomo para cobrir todos os segmentos
-                bg_height = max(0.6, total_person_height)  # Usar no mínimo a altura padrão de 0.6
+                # Garantir que cobre exatamente o número de pessoas
+                bg_height = total_person_height
                 
-                # Ajustar o Y inicial para centralizar os segmentos
-                bg_y_start = y_base - 0.3
-                if bg_height > 0.6:
-                    # Se a altura for maior que a padrão, ajustar o início para manter o alinhamento
-                    bg_y_start = y_base - (bg_height - 0.6) / 2
+                # Ajustar o Y inicial para alinhar com o primeiro segmento
+                bg_y_start = y_base
                 
                 # Desenhar barra de fundo do cromossomo com altura adaptada
                 ax.add_patch(plt.Rectangle((0, bg_y_start), chrom_length, bg_height, 
@@ -293,7 +290,8 @@ with tab2:
                 # Adicionar segmentos para cada pessoa
                 for i, (person, person_data) in enumerate(person_groups):
                     # Calcular posição Y para esta pessoa dentro do cromossomo
-                    y_offset = y_base - 0.3 + (i * (person_height + person_spacing))
+                    # Começar do topo do cromossomo e ir descendo uniformemente
+                    y_offset = bg_y_start + (i * (person_height + person_spacing))
                     
                     # Cor para esta pessoa
                     color = color_map[person]
@@ -322,7 +320,7 @@ with tab2:
             ax.set_ylim(-0.5, total_height)
             
             # Posicionar rótulos do eixo Y no centro de cada cromossomo
-            ax.set_yticks([y_positions[chrom] for chrom in unique_chromosomes])
+            ax.set_yticks([y_positions[chrom] + (chrom_heights[chrom] / 2) for chrom in unique_chromosomes])
             ax.set_yticklabels([f"Chr {chrom}" for chrom in unique_chromosomes])
             
             # Melhorar formatação do eixo X com números formatados
