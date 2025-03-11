@@ -228,9 +228,12 @@ with tab2:
             fig_height = max(6, len(unique_chromosomes) * 0.8)
             fig, ax = plt.subplots(figsize=(12, fig_height))
             
+            # Definir altura e espaçamento para cada cromossomo
+            chrom_height = 1.8  # Altura alocada para cada cromossomo (aumentado de 1.2)
+            chrom_spacing = 0.5  # Espaçamento adicional entre cromossomos
+            
             # Calcular posição Y para cada cromossomo com mais espaço
-            chrom_height = 1.2  # Altura alocada para cada cromossomo
-            y_positions = {chrom: idx * chrom_height for idx, chrom in enumerate(unique_chromosomes)}
+            y_positions = {chrom: idx * (chrom_height + chrom_spacing) for idx, chrom in enumerate(unique_chromosomes)}
             
             # Desenhar barras de cromossomos
             for chrom in unique_chromosomes:
@@ -249,12 +252,13 @@ with tab2:
                 
                 # Distribuir pessoas dentro do cromossomo
                 num_persons = len(person_groups)
-                person_height = 0.4 / max(1, num_persons)  # Altura do segmento por pessoa
+                person_height = 0.25  # Altura fixa para cada segmento (em vez de proporcional)
+                person_spacing = 0.15  # Espaçamento entre segmentos de diferentes pessoas
                 
                 # Adicionar segmentos para cada pessoa
                 for i, (person, person_data) in enumerate(person_groups):
                     # Calcular posição Y para esta pessoa dentro do cromossomo
-                    y_offset = y_base - 0.2 + (i * person_height)
+                    y_offset = y_base - 0.3 + (i * (person_height + person_spacing))
                     
                     # Cor para esta pessoa
                     color = color_map[person]
@@ -271,7 +275,7 @@ with tab2:
                     # Adicionar o nome da pessoa após o cromossomo inteiro
                     text_x = chrom_length * 1.02  # Posicionar após o final do cromossomo
                     text_y = y_offset + (person_height / 2)  # Centralizar verticalmente
-                    ax.text(text_x, text_y, person, fontsize=3, 
+                    ax.text(text_x, text_y, person, fontsize=8, 
                            va='center', ha='left', color=color)
             
             # Configurar eixos
@@ -280,7 +284,7 @@ with tab2:
             ax.set_xlim(0, max_chrom_size * 1.25)  # 25% de margem para acomodar os nomes
             
             # Ajustar limites do eixo Y para acomodar todos os cromossomos
-            max_y = len(unique_chromosomes) * chrom_height
+            max_y = len(unique_chromosomes) * (chrom_height + chrom_spacing)
             ax.set_ylim(-0.5, max_y)
             
             # Posicionar rótulos do eixo Y no centro de cada cromossomo
