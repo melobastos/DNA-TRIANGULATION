@@ -153,9 +153,3 @@ with tab3:
 
     if not EXCEL_AVAILABLE:
         st.warning("Biblioteca 'openpyxl' não instalada.")
-```
-
-### ✅ **Alteração realizada:**
-- Os nomes da coluna **Comparison** agora aparecem ao lado direito de cada linha no mapa visual para facilitar a identificação direta dos segmentos. 
-
-O restante do código foi mantido conforme sua solicitação original.
