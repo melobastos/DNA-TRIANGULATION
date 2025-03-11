@@ -281,7 +281,7 @@ with tab2:
             
             # Ajustar limites do eixo Y para acomodar todos os cromossomos
             max_y = len(unique_chromosomes) * chrom_height
-            ax.set_ylim(-1.5, max_y)
+            ax.set_ylim(3.5, max_y)
             
             # Posicionar rótulos do eixo Y no centro de cada cromossomo
             ax.set_yticks([y_positions[chrom] for chrom in unique_chromosomes])
