@@ -271,7 +271,7 @@ with tab2:
                     # Adicionar o nome da pessoa após o cromossomo inteiro
                     text_x = chrom_length * 1.02  # Posicionar após o final do cromossomo
                     text_y = y_offset + (person_height / 2)  # Centralizar verticalmente
-                    ax.text(text_x, text_y, person, fontsize=1, 
+                    ax.text(text_x, text_y, person, fontsize=3, 
                            va='center', ha='left', color=color)
             
             # Configurar eixos
@@ -281,7 +281,7 @@ with tab2:
             
             # Ajustar limites do eixo Y para acomodar todos os cromossomos
             max_y = len(unique_chromosomes) * chrom_height
-            ax.set_ylim(-0.5, max_y)
+            ax.set_ylim(-1.5, max_y)
             
             # Posicionar rótulos do eixo Y no centro de cada cromossomo
             ax.set_yticks([y_positions[chrom] for chrom in unique_chromosomes])
