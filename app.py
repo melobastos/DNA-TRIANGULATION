@@ -266,7 +266,17 @@ with tab2:
                             segment_length, person_height, 
                             color=color, alpha=0.8
                         ))
-            
+                # Adicionar o nome da comparação ao lado direito do segmento
+    ax.text(
+        row["End"] + max_chrom_size * 0.005,  # Pequeno espaço após o segmento
+        y_offset + person_height / 2,  # Centralizar verticalmente com o segmento
+        row["Comparison"],
+        va='center',
+        ha='left',
+        fontsize=7,
+        color='black',
+        alpha=0.7
+    )
             # Configurar eixos
             # Definir limites do eixo X baseados no maior cromossomo sendo exibido
             max_chrom_size = max(chromosome_sizes[chrom] for chrom in unique_chromosomes)
