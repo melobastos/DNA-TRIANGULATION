@@ -277,7 +277,7 @@ with tab2:
             # Configurar eixos
             # Definir limites do eixo X baseados no maior cromossomo sendo exibido
             max_chrom_size = max(chromosome_sizes[chrom] for chrom in unique_chromosomes)
-            ax.set_xlim(0, max_chrom_size * 3.25)  # 25% de margem para acomodar os nomes
+            ax.set_xlim(0, max_chrom_size * 0.75)  # 25% de margem para acomodar os nomes
             
             # Ajustar limites do eixo Y para acomodar todos os cromossomos
             max_y = len(unique_chromosomes) * chrom_height
