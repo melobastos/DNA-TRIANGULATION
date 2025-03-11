@@ -224,16 +224,39 @@ with tab2:
             color_palette = generate_distinct_colors(len(unique_comparisons))
             color_map = {comp: color_palette[color_idx[comp]] for comp in unique_comparisons}
             
-            # Ajustar tamanho da figura com base no número de cromossomos
-            fig_height = max(6, len(unique_chromosomes) * 0.8)
+            # Analisar o número de pessoas por cromossomo para calcular a altura necessária
+            chrom_person_counts = {}
+            for chrom in unique_chromosomes:
+                chrom_data = filtered_df[filtered_df["Chr"] == chrom]
+                chrom_person_counts[chrom] = len(chrom_data["Comparison"].unique())
+            
+            # Definir parâmetros base
+            base_chrom_height = 0.6  # Altura base para o cromossomo
+            person_height = 0.25     # Altura de cada segmento de pessoa
+            person_spacing = 0.15    # Espaçamento entre segmentos de pessoas
+            chrom_spacing = 0.8      # Espaçamento adicional entre cromossomos
+            
+            # Calcular altura para cada cromossomo com base no número de pessoas
+            chrom_heights = {}
+            for chrom, person_count in chrom_person_counts.items():
+                required_height = base_chrom_height + (person_count * (person_height + person_spacing))
+                chrom_heights[chrom] = max(1.2, required_height)  # Garantir altura mínima
+            
+            # Calcular posições Y acumulativas para cada cromossomo
+            y_positions = {}
+            y_cumulative = 0
+            
+            # Ordenar cromossomos primeiro
+            sorted_chroms = sorted(unique_chromosomes, key=lambda x: (isinstance(x, str), x))
+            
+            for chrom in sorted_chroms:
+                y_positions[chrom] = y_cumulative
+                y_cumulative += chrom_heights[chrom] + chrom_spacing
+            
+            # Ajustar tamanho da figura com base na altura total necessária
+            total_height = y_cumulative
+            fig_height = max(6, total_height * 0.8)  # Proporcional à altura total
             fig, ax = plt.subplots(figsize=(12, fig_height))
-            
-            # Definir altura e espaçamento para cada cromossomo
-            chrom_height = 1.8  # Altura alocada para cada cromossomo (aumentado de 1.2)
-            chrom_spacing = 0.5  # Espaçamento adicional entre cromossomos
-            
-            # Calcular posição Y para cada cromossomo com mais espaço
-            y_positions = {chrom: idx * (chrom_height + chrom_spacing) for idx, chrom in enumerate(unique_chromosomes)}
             
             # Desenhar barras de cromossomos
             for chrom in unique_chromosomes:
@@ -243,17 +266,16 @@ with tab2:
                 # Posição base do cromossomo
                 y_base = y_positions[chrom]
                 
-                # Desenhar barra de fundo do cromossomo
+                # Obter o número de pessoas para este cromossomo
+                person_count = chrom_person_counts[chrom]
+                chrom_height = chrom_heights[chrom]
+                
+                # Desenhar barra de fundo do cromossomo com altura proporcional
                 ax.add_patch(plt.Rectangle((0, y_base - 0.3), chrom_length, 0.6, 
                                           color='lightgrey', alpha=0.3))
                 
                 # Agrupar segmentos por pessoa
                 person_groups = chrom_data.groupby("Comparison")
-                
-                # Distribuir pessoas dentro do cromossomo
-                num_persons = len(person_groups)
-                person_height = 0.25  # Altura fixa para cada segmento (em vez de proporcional)
-                person_spacing = 0.15  # Espaçamento entre segmentos de diferentes pessoas
                 
                 # Adicionar segmentos para cada pessoa
                 for i, (person, person_data) in enumerate(person_groups):
@@ -284,8 +306,7 @@ with tab2:
             ax.set_xlim(0, max_chrom_size * 1.25)  # 25% de margem para acomodar os nomes
             
             # Ajustar limites do eixo Y para acomodar todos os cromossomos
-            max_y = len(unique_chromosomes) * (chrom_height + chrom_spacing)
-            ax.set_ylim(-0.5, max_y)
+            ax.set_ylim(-0.5, total_height)
             
             # Posicionar rótulos do eixo Y no centro de cada cromossomo
             ax.set_yticks([y_positions[chrom] for chrom in unique_chromosomes])
